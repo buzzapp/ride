@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/buzz/ride/model"
 	"gitlab.com/buzz/ride/reqres"
-	stela "gitlab.fg/go/stela/api"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -47,21 +46,8 @@ func (rideService) GetAllRideRequests(filters map[string]interface{}) ([]model.R
 }
 
 func (rideService) RequestRide(userID, latitude, longitude string) (*model.Request, error) {
-	// Create stela client
-	sclient, err := stela.NewClient("localhost:9000")
-	if err != nil {
-		return nil, err
-	}
-
-	// Discover all endpoints registered with that name
-	// Typically done from another service
-	service, err := sclient.DiscoverOne("user.service.buzz")
-	if err != nil {
-		return nil, err
-	}
-
 	// Get a user
-	userURL := fmt.Sprintf("http://%s:%d/users/%s", service.Address, service.Port, userID)
+	userURL := fmt.Sprintf("http://localhost:8000/users/%s", userID)
 	resp, err := http.Get(userURL)
 	if err != nil {
 		return nil, err
