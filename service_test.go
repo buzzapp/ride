@@ -100,6 +100,7 @@ func TestUpdateRequest(t *testing.T) {
 		Accepted:  accepted,
 		CreatedAt: createdAt,
 		UpdatedAt: time.Now().Unix(),
+		User:      user,
 	}
 
 	ride, err := rideSVC.UpdateRideRequest(updatedReq)
@@ -108,7 +109,7 @@ func TestUpdateRequest(t *testing.T) {
 	}
 
 	if ride.Accepted != accepted {
-		t.Error("not accepted")
+		t.Errorf("error updating requests. Expected accepted to be true but got %t", ride.Accepted)
 	}
 }
 

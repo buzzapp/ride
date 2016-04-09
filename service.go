@@ -82,6 +82,8 @@ func (rideService) RequestRide(userID, latitude, longitude string) (*model.Reque
 		return nil, err
 	}
 
+	/************************* CLEAN UP *****************************/
+
 	// send pusher notification
 	client := pusher.Client{
 		AppId:  "196361",
@@ -91,6 +93,8 @@ func (rideService) RequestRide(userID, latitude, longitude string) (*model.Reque
 	}
 
 	client.Trigger("test_channel", "my_event", request)
+
+	/****************************************************************/
 
 	return request, nil
 }

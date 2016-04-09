@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/forestgiant/semver"
 	"github.com/gorilla/mux"
@@ -13,7 +12,8 @@ import (
 
 const (
 	//Version represents the semantic version of this service/api
-	Version = "0.1.0"
+	Version     = "0.1.0"
+	httpAddress = ":8001"
 )
 
 func main() {
@@ -38,14 +38,6 @@ func main() {
 
 	// `package log` domain
 	l.Info("Initializing app.", "Main")
-
-	//Obtain an available port
-	// port, err := portutil.GetUniqueTCP()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	port := 8001
-	httpAddress := ":" + strconv.Itoa(port)
 
 	// Mechanical stuff
 	errc := make(chan error)

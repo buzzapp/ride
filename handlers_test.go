@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -45,31 +44,6 @@ func TestGetRequestedRidesHTTPEndpoint(t *testing.T) {
 	getAllRequestURL := fmt.Sprintf("%s/requests", server.URL)
 
 	resp, err := http.Get(getAllRequestURL)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != 200 {
-		t.Errorf("Expected a 200 response status code but got: %d", resp.StatusCode)
-	}
-}
-
-func TestUpdateRequestHTTPEndpoint(t *testing.T) {
-	server := httptest.NewServer(handleUpdateRideRequest(rideService{}))
-
-	requestURL := fmt.Sprintf("%s/requests/update", server.URL)
-
-	requestJSON := `{"request":{
-		"id": "` + requestID + `",
-		"latitude": "` + latitude + `",
-		"longitude": "` + longitude + `",
-		"created_at": ` + strconv.Itoa(int(requestRidePayload.Request.CreatedAt)) + `
-		}
-	}`
-
-	req, _ := http.NewRequest("POST", requestURL, strings.NewReader(requestJSON))
-
-	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 	}
