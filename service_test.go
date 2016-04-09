@@ -1,10 +1,9 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"gitlab.com/buzz/ride/model"
 
@@ -13,17 +12,13 @@ import (
 
 const (
 	studentUserID = "5707fa8ae5b07e2f4f91e883"
-	latitude      = "38.253238677978"
-	longitude     = "-85.662582397461"
+	latitude      = 38.253238677978
+	longitude     = -85.662582397461
 )
 
 var (
-	rideSVC   RideService
-	requestID string
-	accepted  = true
-	id        string
-	user      model.User
-	createdAt int64
+	rideSVC            RideService
+	serviceRequestRide *model.Request
 )
 
 func TestMain(m *testing.M) {
@@ -31,7 +26,7 @@ func TestMain(m *testing.M) {
 
 	result := m.Run()
 
-	tearDown()
+	htearDown()
 
 	os.Exit(result)
 }
@@ -54,9 +49,7 @@ func TestRequestRide(t *testing.T) {
 		t.Error("Request longitude does not match")
 	}
 
-	requestID = request.ID
-	user = request.User
-	createdAt = request.CreatedAt
+	serviceRequestRide = request
 }
 
 func TestGetAllRideRequests(t *testing.T) {
@@ -92,32 +85,28 @@ func TestGetAllRideRequests(t *testing.T) {
 	}
 }
 
-func TestUpdateRequest(t *testing.T) {
-	updatedReq := &model.UpdateRequest{
-		ID:        requestID,
-		Latitude:  latitude,
-		Longitude: longitude,
-		Accepted:  accepted,
-		CreatedAt: createdAt,
-		UpdatedAt: time.Now().Unix(),
-		User:      user,
+func TestAcceptRideRequest(t *testing.T) {
+	if err := rideSVC.AcceptRideRequest(serviceRequestRide.ID); err != nil {
+		t.Error(err)
 	}
+}
 
-	ride, err := rideSVC.UpdateRideRequest(updatedReq)
+func TestGetRideRequestByID(t *testing.T) {
+	ride, err := rideSVC.GetRideRequestByID(serviceRequestRide.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if ride.Accepted != accepted {
-		t.Errorf("error updating requests. Expected accepted to be true but got %t", ride.Accepted)
+	if ride.ID != serviceRequestRide.ID {
+		t.Errorf("error getting app by id expecting app with id of %s but got %s", serviceRequestRide.ID, ride.ID)
 	}
 }
 
-func tearDown() {
+func htearDown() {
 	//Grab a copy of our session
 	session, err := getSession()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	defer session.Close()
 
@@ -126,8 +115,8 @@ func tearDown() {
 	collection := db.C("requests")
 
 	//remove our applications from the collection
-	err = collection.Remove(bson.M{"latitude": latitude})
+	_, err = collection.RemoveAll(bson.M{"latitude": serviceRequestRide.Latitude})
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("error removing test request ", err)
 	}
 }

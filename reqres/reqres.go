@@ -4,8 +4,8 @@ import "gitlab.com/buzz/ride/model"
 
 // RideRequestRequest describes a request for a new ride request
 type RideRequestRequest struct {
-	Latitude  string `json:"latitude"`
-	Longitude string `json:"longitude"`
+	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"longitude"`
 }
 
 // RideRequestResponse describes a response for a new ride request

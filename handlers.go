@@ -12,12 +12,45 @@ import (
 	"gitlab.com/buzz/ride/reqres"
 )
 
+func handleAcceptRideRequest(svc RideService) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestID := mux.Vars(r)["requestID"]
+
+		// do validation
+		if requestID == "" {
+			respondWithError("Invalid request", errors.New("no request id passed in"), w, http.StatusBadGateway)
+			return
+		}
+
+		if err := svc.AcceptRideRequest(requestID); err != nil {
+			respondWithError("Unable to request ride", err, w, http.StatusInternalServerError)
+			return
+		}
+
+		// Generate our response
+		resp := reqres.MessageResponse{Message: "ride " + requestID + " was accepted"}
+
+		// Marshal up the json response
+		js, err := json.Marshal(resp)
+		if err != nil {
+			respondWithError("unable to marshal json response", err, w, http.StatusInternalServerError)
+			return
+		}
+
+		// Return the response
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(js)
+	})
+}
+
 func handleRideRequest(svc RideService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userID := mux.Vars(r)["userID"]
 
 		if userID == "" {
 			respondWithError("Invalid request", errors.New("no user id passed in"), w, http.StatusBadGateway)
+			return
 		}
 
 		var payload = &reqres.RideRequestRequest{}
@@ -96,49 +129,6 @@ func handleGetAllRideRequest(svc RideService) http.Handler {
 
 		// Return the response
 		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(js)
-	})
-}
-
-func handleUpdateRideRequest(svc RideService) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var payload = &reqres.UpdateRideRequestRequest{}
-		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-			respondWithError("unable to decode json request", err, w, http.StatusInternalServerError)
-			return
-		}
-
-		// do validation
-
-		updatedReq := &model.UpdateRequest{
-			ID:        payload.Request.ID,
-			Latitude:  payload.Request.Latitude,
-			Longitude: payload.Request.Longitude,
-			Accepted:  payload.Request.Accepted,
-			CreatedAt: payload.Request.CreatedAt,
-			User:      payload.Request.User,
-			UpdatedAt: payload.Request.UpdatedAt,
-		}
-
-		request, err := svc.UpdateRideRequest(updatedReq)
-		if err != nil {
-			respondWithError("Unable to request ride", err, w, http.StatusInternalServerError)
-			return
-		}
-
-		// Generate our response
-		resp := reqres.RideRequestResponse{Request: request}
-
-		// Marshal up the json response
-		js, err := json.Marshal(resp)
-		if err != nil {
-			respondWithError("unable to marshal json response", err, w, http.StatusInternalServerError)
-			return
-		}
-
-		// Return the response
-		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(js)
 	})

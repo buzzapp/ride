@@ -8,6 +8,7 @@ import (
 
 	"github.com/forestgiant/semver"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 const (
@@ -55,13 +56,22 @@ func main() {
 		// Create a new mux router
 		router := mux.NewRouter()
 
-		const GetRequestedRides = "/requests"
-		router.Handle(GetRequestedRides, handleGetAllRideRequest(service)).Methods("GET")
-		l.Info("New Handler", "Main", "path", GetRequestedRides, "type", "GET")
+		const AcceptRideRequestPath = "/requests/{requestID}/accept"
+		router.Handle(AcceptRideRequestPath, handleAcceptRideRequest(service)).Methods("POST")
+		l.Info("New Handler", "Main", "path", AcceptRideRequestPath, "type", "POST")
+
+		const GetRequestedRidesPath = "/requests"
+		router.Handle(GetRequestedRidesPath, handleGetAllRideRequest(service)).Methods("GET")
+		l.Info("New Handler", "Main", "path", GetRequestedRidesPath, "type", "GET")
+
+		const RideRequestPath = "/users/{userID}/requests"
+		router.Handle(RideRequestPath, handleRideRequest(service)).Methods("POST")
+		l.Info("New Handler", "Main", "path", RideRequestPath, "type", "POST")
 
 		// register our router and start the server
 		http.Handle("/", router)
-		errc <- http.ListenAndServe(httpAddress, nil)
+		handler := cors.Default().Handler(router)
+		errc <- http.ListenAndServe(httpAddress, handler)
 	}()
 
 	fmt.Println("Fatal Error", "Main", <-errc)

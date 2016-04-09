@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -14,16 +15,70 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+const (
+	// SecretKey is the key to hash the JWT token
+	SecretKey = "33266AB738F764C2A3DD5D8F38336"
+)
+
 // RideService needs a description
 type RideService interface {
+	AcceptRideRequest(requestID string) error
 	GetAllRideRequests(filters map[string]interface{}) ([]model.Request, error)
-	RequestRide(userID, latitude, longitude string) (*model.Request, error)
-	UpdateRideRequest(updatedRequest *model.UpdateRequest) (*model.Request, error)
+	GetRideRequestByID(id string) (*model.Request, error)
+	RequestRide(userID string, latitude, longitude float32) (*model.Request, error)
 }
 
 type rideService struct{}
 
-func (rideService) GetAllRideRequests(filters map[string]interface{}) ([]model.Request, error) {
+func (svc rideService) AcceptRideRequest(requestID string) error {
+	acceptedRequest, err := svc.GetRideRequestByID(requestID)
+	if err != nil {
+		return errors.New("Error getting ride " + err.Error())
+	}
+
+	acceptedRequest.Accepted = true
+
+	//Grab a copy of our session
+	session, err := getSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	//Get our collection of requests
+	db := session.DB("buzz-test-ride")
+	collection := db.C("requests")
+
+	//update our request
+	err = collection.Update(bson.M{"_id": requestID}, acceptedRequest)
+	if err != nil {
+		return err
+	}
+
+	/************************* CLEAN UP *****************************/
+	requests, err := svc.GetAllRideRequests(bson.M{"accepted": false})
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		// send pusher notification
+		client := pusher.Client{
+			AppId:  "196361",
+			Key:    "524d992dcbb206bbae9a",
+			Secret: "e43cf33b3a27d6298ce7",
+			Secure: true,
+		}
+
+		_, err = client.Trigger("request_channel", "ride-accepted", requests)
+		if err != nil {
+			return err
+		}
+	}
+	/****************************************************************/
+
+	return nil
+}
+
+func (svc rideService) GetAllRideRequests(filters map[string]interface{}) ([]model.Request, error) {
 	//Grab a copy of our session
 	session, err := getSession()
 	if err != nil {
@@ -45,7 +100,29 @@ func (rideService) GetAllRideRequests(filters map[string]interface{}) ([]model.R
 	return retrievedRequests, nil
 }
 
-func (rideService) RequestRide(userID, latitude, longitude string) (*model.Request, error) {
+func (rideService) GetRideRequestByID(id string) (*model.Request, error) {
+	//Grab a copy of our session
+	session, err := getSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	//Get our collection of applications
+	db := session.DB("buzz-test-ride")
+	collection := db.C("requests")
+
+	//Get our requests from the collection
+	var retrievedRequest *model.Request
+	err = collection.Find(bson.M{"_id": id}).Sort("-timestamp").One(&retrievedRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return retrievedRequest, nil
+}
+
+func (rideService) RequestRide(userID string, latitude, longitude float32) (*model.Request, error) {
 	// Get a user
 	userURL := fmt.Sprintf("http://localhost:8000/users/%s", userID)
 	resp, err := http.Get(userURL)
@@ -92,7 +169,10 @@ func (rideService) RequestRide(userID, latitude, longitude string) (*model.Reque
 		Secure: true,
 	}
 
-	client.Trigger("test_channel", "my_event", request)
+	_, err = client.Trigger("request_channel", "ride-requested", request)
+	if err != nil {
+		return nil, err
+	}
 
 	/****************************************************************/
 
