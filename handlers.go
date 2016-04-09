@@ -45,7 +45,7 @@ func handleRideRequest(svc RideService) http.Handler {
 		}
 
 		// Return the response
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(js)
 	})
@@ -96,6 +96,49 @@ func handleGetAllRideRequest(svc RideService) http.Handler {
 
 		// Return the response
 		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(js)
+	})
+}
+
+func handleUpdateRideRequest(svc RideService) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var payload = &reqres.UpdateRideRequestRequest{}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			respondWithError("unable to decode json request", err, w, http.StatusInternalServerError)
+			return
+		}
+
+		// do validation
+
+		updatedReq := &model.UpdateRequest{
+			ID:        payload.Request.ID,
+			Latitude:  payload.Request.Latitude,
+			Longitude: payload.Request.Longitude,
+			Accepted:  payload.Request.Accepted,
+			CreatedAt: payload.Request.CreatedAt,
+			User:      payload.Request.User,
+			UpdatedAt: payload.Request.UpdatedAt,
+		}
+
+		request, err := svc.UpdateRideRequest(updatedReq)
+		if err != nil {
+			respondWithError("Unable to request ride", err, w, http.StatusInternalServerError)
+			return
+		}
+
+		// Generate our response
+		resp := reqres.RideRequestResponse{Request: request}
+
+		// Marshal up the json response
+		js, err := json.Marshal(resp)
+		if err != nil {
+			respondWithError("unable to marshal json response", err, w, http.StatusInternalServerError)
+			return
+		}
+
+		// Return the response
+		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(js)
 	})

@@ -23,6 +23,11 @@ type GetAllRideRequestResponse struct {
 	Requests []model.Request `json:"requests"`
 }
 
+// UpdateRideRequestRequest describes a request for updating a  ride request
+type UpdateRideRequestRequest struct {
+	Request model.UpdateRequest `json:"request"`
+}
+
 /*****************************/
 /* GENERIC RESPONSES */
 /*****************************/

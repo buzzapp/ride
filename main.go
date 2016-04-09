@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/forestgiant/semver"
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 )
 
 const (
@@ -39,6 +39,14 @@ func main() {
 	// `package log` domain
 	l.Info("Initializing app.", "Main")
 
+	//Obtain an available port
+	// port, err := portutil.GetUniqueTCP()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	port := 8001
+	httpAddress := ":" + strconv.Itoa(port)
+
 	// Mechanical stuff
 	errc := make(chan error)
 	go func() {
@@ -49,22 +57,19 @@ func main() {
 	var service RideService
 	service = rideService{}
 
-	httpAddress := ":5000"
-
 	go func() {
 		l.Info("Establishing HTTP Bindings", "Main", "addr", httpAddress, "transport", "HTTP/JSON")
 
 		// Create a new mux router
 		router := mux.NewRouter()
 
-		const GetAllRideRequestURL = "/requests"
-		router.Handle(GetAllRideRequestURL, handleGetAllRideRequest(service)).Methods("GET")
-		l.Info("New Handler", "Main", "path", GetAllRideRequestURL, "type", "GET")
+		const GetRequestedRides = "/requests"
+		router.Handle(GetRequestedRides, handleGetAllRideRequest(service)).Methods("GET")
+		l.Info("New Handler", "Main", "path", GetRequestedRides, "type", "GET")
 
 		// register our router and start the server
-		handler := cors.Default().Handler(router)
 		http.Handle("/", router)
-		errc <- http.ListenAndServe(httpAddress, handler)
+		errc <- http.ListenAndServe(httpAddress, nil)
 	}()
 
 	fmt.Println("Fatal Error", "Main", <-errc)

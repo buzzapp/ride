@@ -4,6 +4,9 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
+
+	"gitlab.com/buzz/ride/model"
 
 	"gopkg.in/mgo.v2/bson"
 )
@@ -17,6 +20,10 @@ const (
 var (
 	rideSVC   RideService
 	requestID string
+	accepted  = true
+	id        string
+	user      model.User
+	createdAt int64
 )
 
 func TestMain(m *testing.M) {
@@ -48,6 +55,8 @@ func TestRequestRide(t *testing.T) {
 	}
 
 	requestID = request.ID
+	user = request.User
+	createdAt = request.CreatedAt
 }
 
 func TestGetAllRideRequests(t *testing.T) {
@@ -80,6 +89,26 @@ func TestGetAllRideRequests(t *testing.T) {
 		if r.Accepted != false {
 			t.Error("filter not working")
 		}
+	}
+}
+
+func TestUpdateRequest(t *testing.T) {
+	updatedReq := &model.UpdateRequest{
+		ID:        requestID,
+		Latitude:  latitude,
+		Longitude: longitude,
+		Accepted:  accepted,
+		CreatedAt: createdAt,
+		UpdatedAt: time.Now().Unix(),
+	}
+
+	ride, err := rideSVC.UpdateRideRequest(updatedReq)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if ride.Accepted != accepted {
+		t.Error("not accepted")
 	}
 }
 

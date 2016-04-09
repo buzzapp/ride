@@ -6,8 +6,9 @@ type Request struct {
 	Latitude  string `bson:"latitude" json:"latitude"`
 	Longitude string `bson:"longitude" json:"longitude"`
 	Accepted  bool   `bson:"accepted" json:"accepted"`
-	Timestamp int64  `bson:"timestamp" json:"timestamp"`
+	CreatedAt int64  `bson:"created_at" json:"created_at"`
 	User      User   `bson:"user" json:"user"`
+	UpdatedAt int64  `bson:"updated_at" json:"updated_at"`
 }
 
 // User describes the properties of a user
@@ -20,4 +21,15 @@ type User struct {
 	Role      string `bson:"role" json:"role"`
 	Username  string `bson:"username" json:"username"`
 	Timestamp int64  `bson:"timestamp" json:"timestamp"`
+}
+
+// UpdateRequest describes the properties updating a request
+type UpdateRequest struct {
+	ID        string `bson:"_id" json:"id"`
+	Latitude  string `bson:"latitude" json:"latitude"`
+	Longitude string `bson:"longitude" json:"longitude"`
+	Accepted  bool   `bson:"accepted" json:"accepted"`
+	CreatedAt int64  `bson:"created_at" json:"created_at"`
+	User      User   `bson:"user" json:"user"`
+	UpdatedAt int64  `bson:"updated_at" json:"updated_at"`
 }

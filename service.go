@@ -17,9 +17,9 @@ import (
 
 // RideService needs a description
 type RideService interface {
-	// UpdateRideRequest(requestID string) error
 	GetAllRideRequests(filters map[string]interface{}) ([]model.Request, error)
 	RequestRide(userID, latitude, longitude string) (*model.Request, error)
+	UpdateRideRequest(updatedRequest *model.UpdateRequest) (*model.Request, error)
 }
 
 type rideService struct{}
@@ -78,7 +78,7 @@ func (rideService) RequestRide(userID, latitude, longitude string) (*model.Reque
 		Latitude:  latitude,
 		Longitude: longitude,
 		Accepted:  false,
-		Timestamp: time.Now().Unix(),
+		CreatedAt: time.Now().Unix(),
 	}
 
 	//Grab a copy of our session
@@ -107,6 +107,37 @@ func (rideService) RequestRide(userID, latitude, longitude string) (*model.Reque
 	client.Trigger("test_channel", "my_event", request)
 
 	return request, nil
+}
+
+func (rideService) UpdateRideRequest(updatedRequest *model.UpdateRequest) (*model.Request, error) {
+	updatedReq := &model.Request{
+		ID:        updatedRequest.ID,
+		Latitude:  updatedRequest.Latitude,
+		Longitude: updatedRequest.Longitude,
+		Accepted:  updatedRequest.Accepted,
+		CreatedAt: updatedRequest.CreatedAt,
+		User:      updatedRequest.User,
+		UpdatedAt: updatedRequest.UpdatedAt,
+	}
+
+	//Grab a copy of our session
+	session, err := getSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	//Get our collection of applications
+	db := session.DB("buzz-test-ride")
+	collection := db.C("requests")
+
+	//Insert our application
+	err = collection.Update(bson.M{"_id": updatedRequest.ID}, updatedReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedReq, nil
 }
 
 var globalSession *mgo.Session
