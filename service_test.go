@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	studentUserID = "5707fa8ae5b07e2f4f91e883"
-	latitude      = 38.253238677978
-	longitude     = -85.662582397461
+	studentUserID   = "5707fa8ae5b07e2f4f91e883"
+	fromAddressTest = "315 m street, lousiville, ky, 40208"
+	toAddressTest   = "15630 sw 16th ct, weston, fl, 33327"
 )
 
 var (
@@ -26,13 +26,13 @@ func TestMain(m *testing.M) {
 
 	result := m.Run()
 
-	htearDown()
+	tearDown()
 
 	os.Exit(result)
 }
 
 func TestRequestRide(t *testing.T) {
-	request, err := rideSVC.RequestRide(studentUserID, latitude, longitude)
+	request, err := rideSVC.RequestRide(studentUserID, fromAddressTest, toAddressTest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -41,11 +41,11 @@ func TestRequestRide(t *testing.T) {
 		t.Error("Request student id does not match")
 	}
 
-	if request.Latitude != latitude {
+	if request.FromAddress != fromAddressTest {
 		t.Error("Request latitude does not match")
 	}
 
-	if request.Longitude != longitude {
+	if request.ToAddress != toAddressTest {
 		t.Error("Request longitude does not match")
 	}
 
@@ -102,7 +102,7 @@ func TestGetRideRequestByID(t *testing.T) {
 	}
 }
 
-func htearDown() {
+func tearDown() {
 	//Grab a copy of our session
 	session, err := getSession()
 	if err != nil {
@@ -115,7 +115,7 @@ func htearDown() {
 	collection := db.C("requests")
 
 	//remove our applications from the collection
-	_, err = collection.RemoveAll(bson.M{"latitude": serviceRequestRide.Latitude})
+	_, err = collection.RemoveAll(bson.M{"from_address": serviceRequestRide.FromAddress})
 	if err != nil {
 		fmt.Println("error removing test request ", err)
 	}

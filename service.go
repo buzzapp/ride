@@ -25,7 +25,7 @@ type RideService interface {
 	AcceptRideRequest(requestID string) error
 	GetAllRideRequests(filters map[string]interface{}) ([]model.Request, error)
 	GetRideRequestByID(id string) (*model.Request, error)
-	RequestRide(userID string, latitude, longitude float32) (*model.Request, error)
+	RequestRide(userID, fromAddress, toAddress string) (*model.Request, error)
 }
 
 type rideService struct{}
@@ -122,7 +122,7 @@ func (rideService) GetRideRequestByID(id string) (*model.Request, error) {
 	return retrievedRequest, nil
 }
 
-func (rideService) RequestRide(userID string, latitude, longitude float32) (*model.Request, error) {
+func (rideService) RequestRide(userID, fromAddress, toAddress string) (*model.Request, error) {
 	// Get a user
 	userURL := fmt.Sprintf("http://localhost:8000/users/%s", userID)
 	resp, err := http.Get(userURL)
@@ -136,12 +136,12 @@ func (rideService) RequestRide(userID string, latitude, longitude float32) (*mod
 	}
 
 	request := &model.Request{
-		ID:        bson.NewObjectId().Hex(),
-		User:      userPayload.User,
-		Latitude:  latitude,
-		Longitude: longitude,
-		Accepted:  false,
-		CreatedAt: time.Now().Unix(),
+		ID:          bson.NewObjectId().Hex(),
+		User:        userPayload.User,
+		FromAddress: fromAddress,
+		ToAddress:   toAddress,
+		Accepted:    false,
+		CreatedAt:   time.Now().Unix(),
 	}
 
 	//Grab a copy of our session
@@ -177,37 +177,6 @@ func (rideService) RequestRide(userID string, latitude, longitude float32) (*mod
 	/****************************************************************/
 
 	return request, nil
-}
-
-func (rideService) UpdateRideRequest(updatedRequest *model.UpdateRequest) (*model.Request, error) {
-	updatedReq := &model.Request{
-		ID:        updatedRequest.ID,
-		Latitude:  updatedRequest.Latitude,
-		Longitude: updatedRequest.Longitude,
-		Accepted:  updatedRequest.Accepted,
-		CreatedAt: updatedRequest.CreatedAt,
-		User:      updatedRequest.User,
-		UpdatedAt: updatedRequest.UpdatedAt,
-	}
-
-	//Grab a copy of our session
-	session, err := getSession()
-	if err != nil {
-		return nil, err
-	}
-	defer session.Close()
-
-	//Get our collection of applications
-	db := session.DB("buzz-test-ride")
-	collection := db.C("requests")
-
-	//Insert our application
-	err = collection.Update(bson.M{"_id": updatedRequest.ID}, updatedReq)
-	if err != nil {
-		return nil, err
-	}
-
-	return updatedReq, nil
 }
 
 var globalSession *mgo.Session

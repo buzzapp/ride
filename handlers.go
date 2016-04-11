@@ -61,7 +61,7 @@ func handleRideRequest(svc RideService) http.Handler {
 
 		// do validation
 
-		request, err := svc.RequestRide(userID, payload.Latitude, payload.Longitude)
+		request, err := svc.RequestRide(userID, payload.FromAddress, payload.ToAddress)
 		if err != nil {
 			respondWithError("Unable to request ride", err, w, http.StatusInternalServerError)
 			return

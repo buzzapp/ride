@@ -10,8 +10,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"gopkg.in/mgo.v2/bson"
-
 	"github.com/gorilla/mux"
 	"gitlab.com/buzz/ride/reqres"
 )
@@ -45,8 +43,8 @@ func TestRequestRideHTTPEndpoint(t *testing.T) {
 	requestURL := fmt.Sprintf("%s/users/%s/request-ride", server.URL, studentUserID)
 
 	requestJSON := &reqres.RideRequestRequest{
-		Latitude:  latitude,
-		Longitude: longitude,
+		FromAddress: fromAddressTest,
+		ToAddress:   toAddressTest,
 	}
 
 	js, _ := json.Marshal(requestJSON)
@@ -98,23 +96,4 @@ func getPayload(respBody io.Reader) {
 	}
 
 	requestRideResponsePayload = payload
-}
-
-func tearDown() {
-	//Grab a copy of our session
-	session, err := getSession()
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer session.Close()
-
-	//Get our collection of applications
-	db := session.DB("buzz-test-ride")
-	collection := db.C("requests")
-
-	//remove our applications from the collection
-	_, err = collection.RemoveAll(bson.M{"latitude": requestRideResponsePayload.Request.Latitude})
-	if err != nil {
-		fmt.Println("error removing test request ", err)
-	}
 }

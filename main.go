@@ -70,7 +70,10 @@ func main() {
 
 		// register our router and start the server
 		http.Handle("/", router)
-		handler := cors.Default().Handler(router)
+		c := cors.New(cors.Options{
+			AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "Authorization"},
+		})
+		handler := c.Handler(router)
 		errc <- http.ListenAndServe(httpAddress, handler)
 	}()
 

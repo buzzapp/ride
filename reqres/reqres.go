@@ -4,8 +4,8 @@ import "gitlab.com/buzz/ride/model"
 
 // RideRequestRequest describes a request for a new ride request
 type RideRequestRequest struct {
-	Latitude  float32 `json:"latitude"`
-	Longitude float32 `json:"longitude"`
+	FromAddress string `json:"from_address"`
+	ToAddress   string `json:"to_address"`
 }
 
 // RideRequestResponse describes a response for a new ride request
@@ -21,11 +21,6 @@ type GetUserByIDResponse struct {
 // GetAllRideRequestResponse describes a resposne for getting all rides
 type GetAllRideRequestResponse struct {
 	Requests []model.Request `json:"requests"`
-}
-
-// UpdateRideRequestRequest describes a request for updating a  ride request
-type UpdateRideRequestRequest struct {
-	Request model.UpdateRequest `json:"request"`
 }
 
 /*****************************/
