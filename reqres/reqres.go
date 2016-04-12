@@ -1,11 +1,11 @@
 package reqres
 
-import "gitlab.com/buzz/ride/model"
+import "github.com/buzzapp/ride/model"
 
 // RideRequestRequest describes a request for a new ride request
 type RideRequestRequest struct {
-	FromAddress string `json:"from_address"`
-	ToAddress   string `json:"to_address"`
+	FromAddress model.Address `json:"from_address"`
+	ToAddress   model.Address `json:"to_address"`
 }
 
 // RideRequestResponse describes a response for a new ride request

@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/buzzapp/ride/reqres"
 	"github.com/gorilla/mux"
-	"gitlab.com/buzz/ride/reqres"
 )
 
 var (
@@ -59,6 +60,8 @@ func TestRequestRideHTTPEndpoint(t *testing.T) {
 	}
 
 	if resp.StatusCode != 201 {
+		html, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(html))
 		t.Errorf("Expected a 201 response status code but got: %d", resp.StatusCode)
 	}
 

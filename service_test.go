@@ -5,15 +5,18 @@ import (
 	"os"
 	"testing"
 
-	"gitlab.com/buzz/ride/model"
+	"github.com/buzzapp/ride/model"
 
 	"gopkg.in/mgo.v2/bson"
 )
 
 const (
-	studentUserID   = "5707fa8ae5b07e2f4f91e883"
-	fromAddressTest = "315 m street, lousiville, ky, 40208"
-	toAddressTest   = "15630 sw 16th ct, weston, fl, 33327"
+	studentUserID = "5707fa8ae5b07e2f4f91e883"
+)
+
+var (
+	fromAddressTest = model.Address{Latitude: 38.209265, Longitude: -85.763981}
+	toAddressTest   = model.Address{Latitude: 38.2543950, Longitude: -85.6875660}
 )
 
 var (

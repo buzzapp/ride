@@ -2,13 +2,19 @@ package model
 
 // Request represnts a ride request placed by a student user
 type Request struct {
-	ID          string `bson:"_id" json:"id"`
-	FromAddress string `bson:"from_address" json:"from_address"`
-	ToAddress   string `bson:"to_address" json:"to_address"`
-	Accepted    bool   `bson:"accepted" json:"accepted"`
-	CreatedAt   int64  `bson:"created_at" json:"created_at"`
-	User        User   `bson:"user" json:"user"`
-	UpdatedAt   int64  `bson:"updated_at" json:"updated_at"`
+	ID          string  `bson:"_id" json:"id"`
+	FromAddress Address `bson:"from_address" json:"from_address"`
+	ToAddress   Address `bson:"to_address" json:"to_address"`
+	Accepted    bool    `bson:"accepted" json:"accepted"`
+	CreatedAt   int64   `bson:"created_at" json:"created_at"`
+	User        User    `bson:"user" json:"user"`
+	UpdatedAt   int64   `bson:"updated_at" json:"updated_at"`
+}
+
+// Address describes the to and from addresses from a request
+type Address struct {
+	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"longitude"`
 }
 
 // User describes the properties of a user

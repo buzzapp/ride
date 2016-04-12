@@ -9,8 +9,8 @@ import (
 
 	"github.com/pusher/pusher-http-go"
 
-	"gitlab.com/buzz/ride/model"
-	"gitlab.com/buzz/ride/reqres"
+	"github.com/buzzapp/ride/model"
+	"github.com/buzzapp/ride/reqres"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -25,7 +25,7 @@ type RideService interface {
 	AcceptRideRequest(requestID string) error
 	GetAllRideRequests(filters map[string]interface{}) ([]model.Request, error)
 	GetRideRequestByID(id string) (*model.Request, error)
-	RequestRide(userID, fromAddress, toAddress string) (*model.Request, error)
+	RequestRide(userID string, fromAddress, toAddress model.Address) (*model.Request, error)
 }
 
 type rideService struct{}
@@ -92,7 +92,7 @@ func (svc rideService) GetAllRideRequests(filters map[string]interface{}) ([]mod
 
 	//Get our requests from the collection
 	var retrievedRequests []model.Request
-	err = collection.Find(filters).Sort("-timestamp").All(&retrievedRequests)
+	err = collection.Find(filters).Sort("timestamp").All(&retrievedRequests)
 	if err != nil {
 		return []model.Request{}, err
 	}
@@ -122,7 +122,7 @@ func (rideService) GetRideRequestByID(id string) (*model.Request, error) {
 	return retrievedRequest, nil
 }
 
-func (rideService) RequestRide(userID, fromAddress, toAddress string) (*model.Request, error) {
+func (rideService) RequestRide(userID string, fromAddress, toAddress model.Address) (*model.Request, error) {
 	// Get a user
 	userURL := fmt.Sprintf("http://localhost:8000/users/%s", userID)
 	resp, err := http.Get(userURL)

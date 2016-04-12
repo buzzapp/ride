@@ -8,8 +8,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"gitlab.com/buzz/ride/model"
-	"gitlab.com/buzz/ride/reqres"
+	"github.com/buzzapp/ride/model"
+	"github.com/buzzapp/ride/reqres"
 )
 
 func handleAcceptRideRequest(svc RideService) http.Handler {
