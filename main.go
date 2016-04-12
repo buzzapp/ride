@@ -64,6 +64,10 @@ func main() {
 		router.Handle(GetRequestedRidesPath, handleGetAllRideRequest(service)).Methods("GET")
 		l.Info("New Handler", "Main", "path", GetRequestedRidesPath, "type", "GET")
 
+		const GetRequestByIDPath = "/requests/{requestID}"
+		router.Handle(GetRequestByIDPath, handleGetRequestByID(service)).Methods("GET")
+		l.Info("New Handler", "Main", "path", GetRequestByIDPath, "type", "GET")
+
 		const RideRequestPath = "/users/{userID}/requests"
 		router.Handle(RideRequestPath, handleRideRequest(service)).Methods("POST")
 		l.Info("New Handler", "Main", "path", RideRequestPath, "type", "POST")

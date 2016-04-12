@@ -134,6 +134,38 @@ func handleGetAllRideRequest(svc RideService) http.Handler {
 	})
 }
 
+func handleGetRequestByID(svc RideService) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestID := mux.Vars(r)["requestID"]
+
+		if requestID == "" {
+			respondWithError("Invalid request", errors.New("no user id passed in"), w, http.StatusBadGateway)
+			return
+		}
+
+		request, err := svc.GetRideRequestByID(requestID)
+		if err != nil {
+			respondWithError("Unable to request ride", err, w, http.StatusInternalServerError)
+			return
+		}
+
+		// Generate our response
+		resp := reqres.RideRequestResponse{Request: request}
+
+		// Marshal up the json response
+		js, err := json.Marshal(resp)
+		if err != nil {
+			respondWithError("unable to marshal json response", err, w, http.StatusInternalServerError)
+			return
+		}
+
+		// Return the response
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(js)
+	})
+}
+
 // Helper function to return a json error message
 func respondWithError(msg string, err error, w http.ResponseWriter, status int) {
 	errMsg := reqres.ErrorResponse{Message: msg + ": " + err.Error()}

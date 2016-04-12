@@ -92,6 +92,29 @@ func TestAcceptRideRequestHTTPEndpoint(t *testing.T) {
 	}
 }
 
+func TestGetRequestByID(t *testing.T) {
+	if requestRideResponsePayload.Request.ID != "" {
+		router := mux.NewRouter()
+
+		router.Handle("/requests/{requestID}", handleGetRequestByID(rideService{}))
+
+		server := httptest.NewServer(router)
+
+		getRequestURL := fmt.Sprintf("%s/requests/%s", server.URL, requestRideResponsePayload.Request.ID)
+
+		req, _ := http.NewRequest("GET", getRequestURL, nil)
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if resp.StatusCode != 200 {
+			t.Errorf("Expected a 200 response status code but got: %d", resp.StatusCode)
+		}
+	}
+}
+
 func getPayload(respBody io.Reader) {
 	var payload = &reqres.RideRequestResponse{}
 	if err := json.NewDecoder(respBody).Decode(&payload); err != nil {
